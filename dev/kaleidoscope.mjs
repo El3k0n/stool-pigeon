@@ -12,6 +12,7 @@ const OUT = process.argv[2] || 'docs/kaleidoscope.png';
 const SIZE = 99;          // cells per side, odd so there is a middle
 const CELL = 5;           // pixels per cell
 const GENERATIONS = 90;
+const POSTER = 30;        // the still shown where APNG doesn't animate
 const B = 1.85;
 
 // The four brand colours, straight from the stylesheet.
@@ -70,6 +71,9 @@ const parts = [Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])];
 parts.push(chunk('IHDR', Buffer.concat([u32(width, width), Buffer.from([8, 3, 0, 0, 0])])));
 parts.push(chunk('PLTE', Buffer.from(palette.flat())));
 parts.push(chunk('acTL', u32(frames.length, 0)));
+// The default image comes before the first fcTL, so it isn't part of the animation:
+// viewers that can't animate show a busy generation instead of a lone dot.
+parts.push(chunk('IDAT', frames[POSTER]));
 let seq = 0;
 frames.forEach((data, i) => {
   // fcTL: sequence, size, offset, delay (ms/1000), dispose none, blend source
@@ -81,8 +85,7 @@ frames.forEach((data, i) => {
   fctl.writeUInt16BE(delay, 20);
   fctl.writeUInt16BE(1000, 22);
   parts.push(chunk('fcTL', fctl));
-  if (i === 0) parts.push(chunk('IDAT', data));
-  else parts.push(chunk('fdAT', Buffer.concat([u32(seq++), data])));
+  parts.push(chunk('fdAT', Buffer.concat([u32(seq++), data])));
 });
 parts.push(chunk('IEND', Buffer.alloc(0)));
 writeFileSync(OUT, Buffer.concat(parts));
