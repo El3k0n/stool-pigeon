@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Engine and language
+        run: node --test tests/*.test.js
+      - name: Every section in headless Chrome, under the production CSP
+        env:
+          CHROME: google-chrome
+        run: |
+          python3 dev/serve.py &
+          sleep 1
+          node dev/smoke.mjs
+          node dev/smoke.mjs --width 390 --shots screenshots
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phone-screenshots
+          path: screenshots
+          if-no-files-found: ignore
