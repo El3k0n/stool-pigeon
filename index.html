@@ -1,0 +1,752 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stool Pigeon — a prisoner's dilemma lab · DPMO!</title>
+<meta name="description" content="Rat or keep quiet? Play the prisoner's dilemma against Mo, pit strategies against each other, run tournaments and evolution, and write your own strategy.">
+<meta name="theme-color" content="#ef709d">
+<link rel="canonical" href="https://donotpissmeoff.com/dilemma/">
+
+<meta property="og:url" content="https://donotpissmeoff.com/dilemma/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="DPMO!">
+<meta property="og:title" content="Stool Pigeon — a prisoner's dilemma lab">
+<meta property="og:description" content="Rat or keep quiet? Play Mo, run tournaments and evolution, write your own strategy.">
+<meta property="og:image" content="https://donotpissmeoff.com/dilemma/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Stool Pigeon: Mo the pigeon next to the payoff matrix">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" href="assets/favicon-32.png" type="image/png">
+<link rel="preload" href="assets/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/work-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<link rel="modulepreload" href="js/engine.js">
+<link rel="modulepreload" href="js/lang.js">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="top bg-pink">
+  <div class="top__bar wrap">
+    <a class="brand" href="/">DPMO!</a>
+    <a class="top__title" href="#intro">Stool Pigeon</a>
+    <button type="button" class="rules-chip" data-action="open-rules" aria-haspopup="dialog">
+      <span class="rules-chip__label">Rules</span>
+      <span class="rules-chip__value" data-text="rules-summary">T5 R3 P1 S0</span>
+    </button>
+  </div>
+  <nav class="tabs" aria-label="Sections">
+    <div class="tabs__track wrap">
+      <a class="tabs__link" href="#intro" data-tab="intro">The deal</a>
+      <a class="tabs__link" href="#play" data-tab="play">Play Mo</a>
+      <a class="tabs__link" href="#duel" data-tab="duel">Duel</a>
+      <a class="tabs__link" href="#tournament" data-tab="tournament">Tournament</a>
+      <a class="tabs__link" href="#evolution" data-tab="evolution">Evolution</a>
+      <a class="tabs__link" href="#turf" data-tab="turf">Turf war</a>
+      <a class="tabs__link" href="#lab" data-tab="lab">Lab</a>
+      <a class="tabs__link" href="#guide" data-tab="guide">Field guide</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+
+<!-- ================================================================ THE DEAL -->
+<section class="view" id="view-intro" data-view="intro">
+  <div class="hero bg-pink">
+    <div class="hero__inner wrap">
+      <div class="hero__copy">
+        <p class="badge">A prisoner's dilemma lab</p>
+        <h1 class="hero__title">Stool<br>pigeon.</h1>
+        <p class="hero__lede">
+          Two pigeons get busted with a stolen baguette. Separate cages, same offer:
+          rat the other one out and walk away fat. Both keep quiet, both get a decent share.
+          Both rat, both get scraps.
+        </p>
+        <p class="hero__lede hero__lede--strong">Easy, once. Now do it two hundred times with the same bird.</p>
+        <div class="hero__actions">
+          <a class="btn btn--lime btn--shadow" href="#play">Play against Mo</a>
+          <a class="btn btn--white btn--shadow" href="#tournament">Run a tournament</a>
+        </div>
+      </div>
+      <div class="hero__art">
+        <div class="hero__blob"></div>
+        <img class="hero__mo" src="assets/pigeon-annoyed.png" alt="Mo the pigeon, glaring" width="720" height="720">
+        <p class="hero__sticker">Snitches get crumbs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section bg-white">
+    <div class="wrap split split--center">
+      <div class="deal-copy">
+        <p class="eyebrow">The deal, in crumbs</p>
+        <h2 class="subtitle">Whatever they do, ratting pays more.</h2>
+        <p class="lede">
+          If they keep quiet, ratting gets you <strong data-text="pay-T">5</strong> instead of <strong data-text="pay-R">3</strong>.
+          If they rat, ratting gets you <strong data-text="pay-P">1</strong> instead of <strong data-text="pay-S">0</strong>.
+          So both rat, and both walk off with <span data-text="pay-P">1</span> when they could have had <span data-text="pay-R">3</span>.
+          That is the dilemma.
+        </p>
+        <p class="lede">
+          Play it once and ratting wins. Play it again and again with the same bird and memory starts to matter:
+          what they did last time, whether you can trust them, whether they hold a grudge.
+        </p>
+        <button type="button" class="btn btn--plain btn--underline" data-action="open-rules">Change the payoffs</button>
+      </div>
+      <div class="matrix" data-el="matrix" aria-label="Payoff matrix">
+        <div class="matrix__corner"><span>You</span> <span>/</span> <span>Them</span></div>
+        <div class="matrix__head">They keep quiet</div>
+        <div class="matrix__head">They rat</div>
+        <div class="matrix__side">You keep quiet</div>
+        <div class="matrix__cell matrix__cell--cc">
+          <span class="matrix__you" data-text="pay-R">3</span><span class="matrix__them" data-text="pay-R">3</span>
+          <span class="matrix__name">Reward</span>
+        </div>
+        <div class="matrix__cell matrix__cell--cd">
+          <span class="matrix__you" data-text="pay-S">0</span><span class="matrix__them" data-text="pay-T">5</span>
+          <span class="matrix__name">Sucker</span>
+        </div>
+        <div class="matrix__side">You rat</div>
+        <div class="matrix__cell matrix__cell--dc">
+          <span class="matrix__you" data-text="pay-T">5</span><span class="matrix__them" data-text="pay-S">0</span>
+          <span class="matrix__name">Temptation</span>
+        </div>
+        <div class="matrix__cell matrix__cell--dd">
+          <span class="matrix__you" data-text="pay-P">1</span><span class="matrix__them" data-text="pay-P">1</span>
+          <span class="matrix__name">Punishment</span>
+        </div>
+        <p class="matrix__note">Big number: your crumbs. Small number: theirs.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section bg-black">
+    <div class="wrap">
+      <div class="history">
+        <p class="eyebrow text-lime">1980</p>
+        <p class="history__text">
+          Robert Axelrod asked game theorists to mail him programs that play this game, then made them fight.
+          Fourteen entries, some of them hundreds of lines long. The winner had four:
+          <strong class="text-lime">cooperate first, then copy whatever the other one did.</strong>
+          He ran it again with 62 entries. Same winner.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section bg-lime">
+    <div class="wrap stack">
+      <div class="section-head">
+        <h2 class="subtitle">Pick your poison.</h2>
+        <p class="lede">Everything runs in your browser. Nothing is sent anywhere.</p>
+      </div>
+      <ul class="doors">
+        <li><a class="door" href="#play"><span class="door__num">01</span><span class="door__title">Play Mo</span><span class="door__text">You against a mystery strategy. Then guess who it was.</span></a></li>
+        <li><a class="door" href="#duel"><span class="door__num">02</span><span class="door__title">Duel</span><span class="door__text">Two strategies, one match, every move on tape.</span></a></li>
+        <li><a class="door" href="#tournament"><span class="door__num">03</span><span class="door__title">Tournament</span><span class="door__text">Everyone plays everyone. Axelrod style.</span></a></li>
+        <li><a class="door" href="#evolution"><span class="door__num">04</span><span class="door__title">Evolution</span><span class="door__text">Winners breed, losers die out. Who's left standing?</span></a></li>
+        <li><a class="door" href="#turf"><span class="door__num">05</span><span class="door__title">Turf war</span><span class="door__text">Pigeons on a grid copy their most successful neighbour.</span></a></li>
+        <li><a class="door" href="#lab"><span class="door__num">06</span><span class="door__title">Lab</span><span class="door__text">Write your own strategy. Get a psych evaluation.</span></a></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ PLAY -->
+<section class="view" id="view-play" data-view="play" hidden>
+  <div class="section bg-white">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">You vs Mo</p>
+          <h2 class="subtitle">Keep quiet or rat?</h2>
+        </div>
+        <p class="lede">Mo is running a strategy and won't say which. Nobody tells you when it ends. Keys: <kbd>C</kbd> keep quiet, <kbd>D</kbd> rat.</p>
+      </div>
+
+      <div class="play">
+        <div class="play__stage">
+          <div class="play__blob"></div>
+          <img class="play__mo" data-el="mo" src="assets/pigeon-laptop.png" alt="Mo, waiting for your move" width="720" height="720">
+          <p class="bubble" data-el="say" aria-live="polite">Your move.</p>
+        </div>
+
+        <div class="play__side">
+          <div class="scoreboard">
+            <div class="scoreboard__side">
+              <span class="scoreboard__who">You</span>
+              <span class="scoreboard__num" data-el="you-score">0</span>
+            </div>
+            <div class="scoreboard__mid">
+              <span class="scoreboard__round">Round <span data-el="round">1</span></span>
+            </div>
+            <div class="scoreboard__side scoreboard__side--right">
+              <span class="scoreboard__who">Mo</span>
+              <span class="scoreboard__num" data-el="mo-score">0</span>
+            </div>
+          </div>
+
+          <div class="play__buttons" data-el="buttons">
+            <button type="button" class="btn btn--lime btn--shadow btn--huge" data-action="play-c">Keep quiet <kbd>C</kbd></button>
+            <button type="button" class="btn btn--pink btn--shadow btn--huge" data-action="play-d">Rat <kbd>D</kbd></button>
+          </div>
+
+          <div class="strip" data-el="strip" aria-label="Moves so far">
+            <div class="strip__row"><span class="strip__label">You</span><div class="strip__tiles" data-el="strip-you"></div></div>
+            <div class="strip__row"><span class="strip__label">Mo</span><div class="strip__tiles" data-el="strip-mo"></div></div>
+          </div>
+
+          <div class="play__controls">
+            <label class="field field--inline">
+              <span class="field__label">Opponent</span>
+              <span class="select"><select data-el="opponent"></select></span>
+            </label>
+            <button type="button" class="btn btn--small btn--white" data-action="play-new">New game</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel--pink" data-el="end" hidden>
+        <div class="end">
+          <div class="end__head">
+            <h3 class="end__title" data-el="end-title">Game over.</h3>
+            <p class="end__text" data-el="end-text"></p>
+          </div>
+          <div data-el="guess">
+            <p class="eyebrow">So who was Mo playing?</p>
+            <div class="guess" data-el="guess-list"></div>
+          </div>
+          <div data-el="reveal" hidden>
+            <p class="end__reveal" data-el="reveal-text"></p>
+            <p class="eyebrow">Same opponent, same coin flips, same number of rounds. What others would have scored:</p>
+            <div class="bars" data-el="compare"></div>
+            <div class="end__actions">
+              <button type="button" class="btn btn--small btn--ink" data-action="play-rematch">Rematch</button>
+              <button type="button" class="btn btn--small btn--white" data-action="play-new">New mystery</button>
+              <a class="btn btn--small btn--white" data-el="end-duel" href="#duel">Study it in a duel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ DUEL -->
+<section class="view" id="view-duel" data-view="duel" hidden>
+  <div class="section bg-white">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">One on one</p>
+          <h2 class="subtitle">Duel.</h2>
+        </div>
+        <p class="lede">Pick two strategies and watch the tape. Moves flipped by noise are crossed out.</p>
+      </div>
+
+      <div class="duel-pick">
+        <label class="field">
+          <span class="field__label">Strategy A</span>
+          <span class="select"><select data-el="a"></select></span>
+        </label>
+        <button type="button" class="btn btn--small btn--white duel-pick__swap" data-action="duel-swap" aria-label="Swap A and B">⇄</button>
+        <label class="field">
+          <span class="field__label">Strategy B</span>
+          <span class="select"><select data-el="b"></select></span>
+        </label>
+        <div class="duel-pick__actions">
+          <button type="button" class="btn btn--small btn--ink" data-action="duel-play" data-el="play-btn">Play</button>
+          <button type="button" class="btn btn--small btn--white" data-action="duel-instant">Skip to end</button>
+          <button type="button" class="btn btn--small btn--white" data-action="duel-reseed" title="Same strategies, new coin flips">New seed</button>
+        </div>
+      </div>
+
+      <div class="duel-score">
+        <div class="duel-score__side">
+          <span class="duel-score__name" data-el="name-a">A</span>
+          <span class="duel-score__num" data-el="score-a">0</span>
+          <span class="duel-score__sub" data-el="sub-a"></span>
+        </div>
+        <div class="duel-score__mid">
+          <span class="duel-score__round" data-el="round">0 / 0</span>
+          <span class="duel-score__verdict" data-el="verdict"></span>
+        </div>
+        <div class="duel-score__side duel-score__side--right">
+          <span class="duel-score__name" data-el="name-b">B</span>
+          <span class="duel-score__num" data-el="score-b">0</span>
+          <span class="duel-score__sub" data-el="sub-b"></span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__head">
+          <h3 class="panel__title">The tape</h3>
+          <p class="legend">
+            <span class="legend__item"><span class="tile tile--c"></span> keeps quiet</span>
+            <span class="legend__item"><span class="tile tile--d"></span> rats</span>
+            <span class="legend__item"><span class="tile tile--c tile--flip"></span> flipped by noise</span>
+          </p>
+        </div>
+        <canvas class="tape" data-el="tape" aria-label="Every move of the match"></canvas>
+        <p class="tooltip" data-el="tape-tip" hidden></p>
+      </div>
+
+      <div class="split">
+        <div class="panel duel-chart">
+          <div class="panel__head">
+            <h3 class="panel__title">Crumbs over time</h3>
+            <p class="legend" data-el="chart-legend"></p>
+          </div>
+          <canvas class="chart" data-el="chart" aria-label="Running score of both strategies"></canvas>
+        </div>
+        <div class="panel duel-outcomes">
+          <div class="panel__head"><h3 class="panel__title">How rounds ended</h3></div>
+          <div class="outcomes" data-el="outcomes"></div>
+          <p class="error" data-el="error" hidden></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ TOURNAMENT -->
+<section class="view" id="view-tournament" data-view="tournament" hidden>
+  <div class="section bg-white">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Everyone plays everyone</p>
+          <h2 class="subtitle">Tournament.</h2>
+        </div>
+        <p class="lede">A round robin like Axelrod's. Ranked by average crumbs per round, not by matches won: you can lose every match and still win the tournament.</p>
+      </div>
+
+      <div class="tourney">
+        <aside class="panel tourney__entrants">
+          <div class="panel__head">
+            <h3 class="panel__title">Entrants <span class="count" data-el="count">0</span></h3>
+          </div>
+          <div class="chips">
+            <button type="button" class="chip" data-action="t-pick" data-value="all">All</button>
+            <button type="button" class="chip" data-action="t-pick" data-value="none">None</button>
+            <button type="button" class="chip" data-action="t-pick" data-value="classic">Default lineup</button>
+            <button type="button" class="chip" data-action="t-pick" data-value="nice">Only nice</button>
+          </div>
+          <ul class="checklist" data-el="list"></ul>
+          <div class="tourney__opts">
+            <label class="field field--inline">
+              <span class="field__label">Repetitions</span>
+              <input class="input input--short" type="number" min="1" max="50" step="1" data-el="reps">
+            </label>
+            <label class="check">
+              <input type="checkbox" data-el="self">
+              <span>Also play own twin</span>
+            </label>
+          </div>
+          <button type="button" class="btn btn--ink btn--shadow-pink btn--block" data-action="t-run" data-el="run">Run tournament</button>
+          <div class="progress" data-el="progress" hidden><div class="progress__bar" data-el="bar"></div></div>
+        </aside>
+
+        <div class="tourney__results">
+          <div class="empty" data-el="empty">
+            <img class="empty__mo" src="assets/pigeon-fly.png" alt="" width="720" height="241">
+            <p>Pick the entrants and hit Run. It takes a second.</p>
+          </div>
+          <div data-el="results" hidden>
+            <p class="stale" data-el="stale" hidden>The rules changed since this ran. <button type="button" class="link" data-action="t-run">Run it again</button></p>
+            <div class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">Leaderboard</h3>
+                <p class="panel__meta" data-el="meta"></p>
+              </div>
+              <p class="insight" data-el="insight"></p>
+              <ol class="board" data-el="board"></ol>
+            </div>
+            <div class="panel">
+              <div class="panel__head">
+                <h3 class="panel__title">Who beat whom</h3>
+                <p class="panel__meta">Crumbs per round the row got against the column. Click a square to watch that duel.</p>
+              </div>
+              <div class="heat-wrap"><table class="heat" data-el="heat"></table></div>
+              <p class="legend heat-legend" data-el="heat-legend"></p>
+            </div>
+            <div class="end__actions">
+              <a class="btn btn--small btn--lime btn--shadow" href="#evolution">Now let them evolve</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ EVOLUTION -->
+<section class="view" id="view-evolution" data-view="evolution" hidden>
+  <div class="section bg-white">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Survival of the stingiest?</p>
+          <h2 class="subtitle">Evolution.</h2>
+        </div>
+        <p class="lede">A population of 10,000 pigeons. Each generation, strategies that earned more crumbs have more chicks. Under one in 10,000 and you're extinct.</p>
+      </div>
+
+      <div class="evo-controls panel">
+        <label class="field field--inline">
+          <span class="field__label">Population from</span>
+          <span class="select"><select data-el="source">
+            <option value="tournament">Last tournament's entrants</option>
+            <option value="classic">Default lineup</option>
+          </select></span>
+        </label>
+        <label class="field field--inline">
+          <span class="field__label">Start</span>
+          <span class="select"><select data-el="start">
+            <option value="equal">Equal shares</option>
+            <option value="random">Random shares</option>
+            <option value="rats">90% Always Defect</option>
+            <option value="invade">One strategy invades (1%)</option>
+          </select></span>
+        </label>
+        <label class="field field--inline" data-el="invader-field" hidden>
+          <span class="field__label">Invader</span>
+          <span class="select"><select data-el="invader"></select></span>
+        </label>
+        <label class="field field--inline">
+          <span class="field__label">Generations</span>
+          <input class="input input--short" type="number" min="10" max="2000" step="10" value="300" data-el="gens">
+        </label>
+        <label class="field field--inline">
+          <span class="field__label">Mutation <span data-el="mut-label">0%</span></span>
+          <input class="range" type="range" min="0" max="5" step="0.1" value="0" data-el="mutation">
+        </label>
+        <div class="evo-controls__buttons">
+          <button type="button" class="btn btn--small btn--ink" data-action="evo-run" data-el="run">Evolve</button>
+          <button type="button" class="btn btn--small btn--white" data-action="evo-instant">Skip to end</button>
+        </div>
+      </div>
+
+      <div class="evo">
+        <div class="panel evo__chart">
+          <div class="panel__head">
+            <h3 class="panel__title">Share of the population</h3>
+            <p class="panel__meta" data-el="gen">Generation 0</p>
+          </div>
+          <canvas class="chart chart--tall" data-el="chart" aria-label="Share of each strategy over the generations"></canvas>
+          <p class="insight" data-el="insight"></p>
+        </div>
+        <div class="panel evo__legend">
+          <div class="panel__head"><h3 class="panel__title">Census</h3></div>
+          <ol class="census" data-el="census"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ TURF WAR -->
+<section class="view" id="view-turf" data-view="turf" hidden>
+  <div class="section bg-black">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow text-lime">Neighbours</p>
+          <h2 class="subtitle">Turf war.</h2>
+        </div>
+        <p class="lede">Every square is a pigeon. It plays its eight neighbours, then copies whoever around it did best. No memory, no plan, and still: patterns. Click and drag to paint.</p>
+      </div>
+
+      <div class="turf">
+        <div class="turf__board">
+          <canvas class="turf__canvas" data-el="canvas" aria-label="The grid of pigeons"></canvas>
+          <div class="turf__bar">
+            <button type="button" class="btn btn--small btn--lime" data-action="turf-play" data-el="play-btn">Play</button>
+            <button type="button" class="btn btn--small btn--dark-line" data-action="turf-step">Step</button>
+            <button type="button" class="btn btn--small btn--dark-line" data-action="turf-reset">Reset</button>
+            <label class="field field--inline field--dark">
+              <span class="field__label">Speed</span>
+              <input class="range range--dark" type="range" min="1" max="60" value="12" data-el="speed">
+            </label>
+            <span class="turf__gen" data-el="gen">Gen 0</span>
+          </div>
+        </div>
+
+        <div class="turf__side">
+          <div class="seg" role="group" aria-label="Mode">
+            <button type="button" class="seg__btn" data-action="turf-mode" data-value="classic" aria-pressed="true">Classic</button>
+            <button type="button" class="seg__btn" data-action="turf-mode" data-value="strategies" aria-pressed="false">Strategies</button>
+          </div>
+
+          <div class="turf__panel" data-el="classic">
+            <p class="turf__text">Nowak and May, 1992. Pure cooperators and pure defectors, one round per neighbour. Cooperating gets you 1 from each cooperating neighbour; defecting gets you <em>b</em>.</p>
+            <label class="field field--dark">
+              <span class="field__label">Temptation b = <strong data-el="b-label">1.85</strong></span>
+              <input class="range range--dark" type="range" min="1" max="2.5" step="0.01" value="1.85" data-el="b">
+            </label>
+            <div class="chips chips--dark">
+              <button type="button" class="chip chip--dark" data-action="turf-start" data-value="one">One rat in the middle</button>
+              <button type="button" class="chip chip--dark" data-action="turf-start" data-value="random">10% rats</button>
+              <button type="button" class="chip chip--dark" data-action="turf-start" data-value="half">Half and half</button>
+            </div>
+            <ul class="turf-legend">
+              <li><span class="swatch swatch--lime"></span> keeps quiet</li>
+              <li><span class="swatch swatch--pink"></span> rats</li>
+              <li><span class="swatch swatch--white"></span> just turned quiet</li>
+              <li><span class="swatch swatch--black-line"></span> just turned rat</li>
+            </ul>
+            <p class="turf__hint">Try b = 1.85 with one rat for a kaleidoscope, 1.6 for frozen fronts, 2.1 for a rat takeover.</p>
+          </div>
+
+          <div class="turf__panel" data-el="strategies" hidden>
+            <p class="turf__text">Up to four strategies. Neighbours play full matches under the current rules, then the losers convert.</p>
+            <div class="turf-picks" data-el="picks"></div>
+            <div class="chips chips--dark">
+              <button type="button" class="chip chip--dark" data-action="turf-start" data-value="mix">Random mix</button>
+              <button type="button" class="chip chip--dark" data-action="turf-start" data-value="blocks">Four blocks</button>
+              <button type="button" class="chip chip--dark" data-action="turf-start" data-value="invade">Invader in the middle</button>
+            </div>
+            <label class="field field--dark">
+              <span class="field__label">Mutation <strong data-el="mut-label">0%</strong></span>
+              <input class="range range--dark" type="range" min="0" max="2" step="0.05" value="0" data-el="mutation">
+            </label>
+          </div>
+
+          <div class="turf__panel">
+            <label class="field field--inline field--dark">
+              <span class="field__label">Grid</span>
+              <span class="select select--dark"><select data-el="size">
+                <option value="49">49 × 49</option>
+                <option value="99" selected>99 × 99</option>
+                <option value="149">149 × 149</option>
+                <option value="199">199 × 199</option>
+              </select></span>
+            </label>
+            <p class="field__label">Brush</p>
+            <div class="brushes" data-el="brushes"></div>
+            <canvas class="spark" data-el="spark" aria-label="Population over time"></canvas>
+            <p class="turf__census" data-el="census"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ LAB -->
+<section class="view" id="view-lab" data-view="lab" hidden>
+  <div class="section bg-white">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Build a better pigeon</p>
+          <h2 class="subtitle">The lab.</h2>
+        </div>
+        <p class="lede">Write a strategy in a few lines, or set the dials. It gets tested as you type and, once saved, it plays in every other section.</p>
+      </div>
+
+      <div class="lab-mine">
+        <span class="field__label">Your strategies</span>
+        <div class="lab-mine__list" data-el="mine"></div>
+        <button type="button" class="chip chip--ink" data-action="lab-new">+ New</button>
+        <span class="select select--small"><select data-el="fork">
+          <option value="">Fork a classic…</option>
+        </select></span>
+      </div>
+
+      <div class="lab">
+        <div class="lab__editor panel">
+          <div class="lab__top">
+            <label class="field lab__name">
+              <span class="field__label">Name</span>
+              <input class="input" type="text" maxlength="40" data-el="name" spellcheck="false" autocomplete="off">
+            </label>
+            <div class="seg" role="group" aria-label="Editor">
+              <button type="button" class="seg__btn" data-action="lab-mode" data-value="script" aria-pressed="true">Script</button>
+              <button type="button" class="seg__btn" data-action="lab-mode" data-value="dials" aria-pressed="false">Dials</button>
+            </div>
+          </div>
+
+          <div class="lab__pane" data-el="script-pane">
+            <div class="code">
+              <div class="code__gutter" data-el="gutter" aria-hidden="true"></div>
+              <div class="code__body">
+                <pre class="code__hl" data-el="hl" aria-hidden="true"></pre>
+                <textarea class="code__input" data-el="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Strategy source code"></textarea>
+              </div>
+            </div>
+            <p class="code__status" data-el="status" aria-live="polite"></p>
+          </div>
+
+          <div class="lab__pane" data-el="dials-pane" hidden>
+            <p class="dials__intro">A memory-one strategy: the chance to keep quiet depends only on what happened last round.</p>
+            <div class="dials" data-el="dials"></div>
+            <div class="chips">
+              <span class="field__label">Presets</span>
+              <button type="button" class="chip" data-action="lab-preset" data-value="tft">Tit for Tat</button>
+              <button type="button" class="chip" data-action="lab-preset" data-value="wsls">Pavlov</button>
+              <button type="button" class="chip" data-action="lab-preset" data-value="gtft">Generous TFT</button>
+              <button type="button" class="chip" data-action="lab-preset" data-value="extort">Extort-2</button>
+              <button type="button" class="chip" data-action="lab-preset" data-value="random">Coin flip</button>
+            </div>
+            <button type="button" class="btn btn--plain btn--underline" data-action="lab-dials-to-script">Open as script</button>
+          </div>
+
+          <div class="lab__actions">
+            <button type="button" class="btn btn--small btn--ink btn--shadow-pink" data-action="lab-save" data-el="save">Save</button>
+            <button type="button" class="btn btn--small btn--white" data-action="lab-duel">Duel it</button>
+            <button type="button" class="btn btn--small btn--white" data-action="lab-share">Copy share link</button>
+            <button type="button" class="btn btn--small btn--white" data-action="lab-delete" data-el="delete" hidden>Delete</button>
+            <span class="lab__saved" data-el="saved" aria-live="polite"></span>
+          </div>
+
+          <details class="ref">
+            <summary class="ref__summary">Language</summary>
+            <div class="ref__body">
+              <p>Scripts run once per round and must <code>return C</code> (keep quiet) or <code>return D</code> (rat). If nothing returns, you keep quiet. No loops, so nothing can hang.</p>
+              <dl class="ref__list">
+                <dt><code>round</code></dt><dd>This round's number, starting at 1. You never know how many are left.</dd>
+                <dt><code>their.last</code> <code>my.last</code></dt><dd>Last move, or <code>none</code> in round 1.</dd>
+                <dt><code>their[2]</code></dt><dd>Two moves ago. <code>their[1]</code> is the last one.</dd>
+                <dt><code>their.at(3)</code></dt><dd>Their move in round 3.</dd>
+                <dt><code>their.first</code></dt><dd>Their opening move.</dd>
+                <dt><code>their.cooperations</code> <code>their.defections</code></dt><dd>Totals so far.</dd>
+                <dt><code>their.count(D, 5)</code></dt><dd>How many D in their last 5 moves. Leave out the 5 for all of them.</dd>
+                <dt><code>their.rate(C)</code></dt><dd>Share of C so far, 0 to 1. Takes an optional window too.</dd>
+                <dt><code>their.ever(D)</code></dt><dd>Have they ever played D?</dd>
+                <dt><code>their.streak</code></dt><dd>How many times in a row they repeated their last move.</dd>
+                <dt><code>my.score</code> <code>my.payoff</code></dt><dd>Your total, and what you got last round.</dd>
+                <dt><code>T R P S</code></dt><dd>The payoffs in play.</dd>
+                <dt><code>chance(0.1)</code></dt><dd>True one time in ten.</dd>
+                <dt><code>mix(0.8)</code></dt><dd>C with probability 0.8, otherwise D.</dd>
+                <dt><code>flip(m)</code></dt><dd>The other move.</dd>
+                <dt><code>random()</code> <code>min</code> <code>max</code> <code>abs</code> <code>floor</code></dt><dd>The usual.</dd>
+                <dt><code>memory x = 0</code></dt><dd>A variable that survives between rounds. Declare at the top. Other variables reset every round.</dd>
+                <dt><code>if … then … elseif … else … end</code></dt><dd>Conditions use <code>== != &lt; &lt;= &gt; &gt;=</code>, <code>and or not</code>.</dd>
+                <dt><code>-- note</code></dt><dd>A comment.</dd>
+              </dl>
+            </div>
+          </details>
+        </div>
+
+        <div class="lab__report">
+          <div class="panel panel--lime">
+            <div class="panel__head">
+              <h3 class="panel__title">Psych evaluation</h3>
+            </div>
+            <div class="psych">
+              <div class="psych__radar" data-el="radar"></div>
+              <div class="psych__copy">
+                <p class="psych__verdict" data-el="verdict">Type something.</p>
+                <ul class="traits" data-el="traits"></ul>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel__head">
+              <h3 class="panel__title">Field test</h3>
+              <p class="panel__meta" data-el="rank"></p>
+            </div>
+            <p class="panel__meta">Average crumbs per round against each classic, under the current rules.</p>
+            <div class="bars" data-el="field"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ FIELD GUIDE -->
+<section class="view" id="view-guide" data-view="guide" hidden>
+  <div class="section bg-lime">
+    <div class="wrap stack">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Know your enemy</p>
+          <h2 class="subtitle">Field guide.</h2>
+        </div>
+        <p class="lede">Every strategy in the building, with its source and a psych profile measured against the same probes.</p>
+      </div>
+      <div class="chips" data-el="filters">
+        <button type="button" class="chip" data-action="g-filter" data-value="all" aria-pressed="true">All</button>
+        <button type="button" class="chip" data-action="g-filter" data-value="nice" aria-pressed="false">Nice</button>
+        <button type="button" class="chip" data-action="g-filter" data-value="nasty" aria-pressed="false">Nasty</button>
+        <button type="button" class="chip" data-action="g-filter" data-value="random" aria-pressed="false">Uses dice</button>
+        <button type="button" class="chip" data-action="g-filter" data-value="classic" aria-pressed="false">Axelrod 1980</button>
+        <button type="button" class="chip" data-action="g-filter" data-value="custom" aria-pressed="false">Yours</button>
+      </div>
+      <ul class="cards" data-el="cards"></ul>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<dialog class="rules" id="rules" aria-labelledby="rules-title">
+  <form class="rules__form" method="dialog" data-el="rules-form">
+    <div class="rules__head">
+      <h2 class="rules__title" id="rules-title">House rules</h2>
+      <button type="submit" class="rules__close" aria-label="Close">×</button>
+    </div>
+
+    <fieldset class="rules__group">
+      <legend class="field__label">Payoffs, in crumbs per round</legend>
+      <div class="payoffs">
+        <label class="payoff"><span class="payoff__key">T</span><span class="payoff__name">Temptation: you rat, they don't</span><input class="input input--short" type="number" step="0.5" name="T"></label>
+        <label class="payoff"><span class="payoff__key">R</span><span class="payoff__name">Reward: both keep quiet</span><input class="input input--short" type="number" step="0.5" name="R"></label>
+        <label class="payoff"><span class="payoff__key">P</span><span class="payoff__name">Punishment: both rat</span><input class="input input--short" type="number" step="0.5" name="P"></label>
+        <label class="payoff"><span class="payoff__key">S</span><span class="payoff__name">Sucker: you don't, they rat</span><input class="input input--short" type="number" step="0.5" name="S"></label>
+      </div>
+      <ul class="rules__warn" data-el="warn"></ul>
+    </fieldset>
+
+    <fieldset class="rules__group">
+      <legend class="field__label">Matches</legend>
+      <label class="field field--inline">
+        <span class="field__label">Rounds per match</span>
+        <input class="input input--short" type="number" min="1" max="2000" step="1" name="rounds">
+      </label>
+      <label class="check">
+        <input type="checkbox" name="randomLength">
+        <span>Nobody knows when it ends (random length, that many rounds on average)</span>
+      </label>
+      <label class="field">
+        <span class="field__label">Noise: <strong data-el="noise-label">0%</strong> of moves come out flipped</span>
+        <input class="range" type="range" min="0" max="20" step="0.5" name="noise">
+      </label>
+    </fieldset>
+
+    <fieldset class="rules__group">
+      <legend class="field__label">Luck</legend>
+      <label class="field field--inline">
+        <span class="field__label">Seed</span>
+        <input class="input input--mid" type="number" min="0" max="999999999" step="1" name="seed">
+      </label>
+      <button type="button" class="chip" data-action="rules-reseed">Roll a new one</button>
+      <p class="rules__note">Same seed, same results. Every coin flip is reproducible.</p>
+    </fieldset>
+
+    <div class="rules__foot">
+      <button type="button" class="btn btn--small btn--white" data-action="rules-reset">Back to classic</button>
+      <button type="submit" class="btn btn--small btn--ink">Done</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" data-el="toast" role="status" hidden></div>
+
+<footer class="site-footer bg-black">
+  <div class="wrap site-footer__inner">
+    <p>A <a href="/">DPMO!</a> side project. No cookies, no tracking: your strategies stay in this browser. <a href="/privacy">Privacy</a></p>
+    <img class="site-footer__mo invert" src="assets/pigeon-sign.png" alt="" width="720" height="495">
+  </div>
+</footer>
+
+<noscript><p class="noscript">This lab runs on JavaScript. Mo is disappointed in your browser.</p></noscript>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
